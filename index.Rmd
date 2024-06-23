@@ -3,18 +3,18 @@ title: "Tablero Censo 2022"
 output: 
   flexdashboard::flex_dashboard:
     logo: logo2.png
-    theme:
-      bg: "#FFFAFA"
-      fg: "#101010" 
-      primary: "#a79970"
-      base_font:
-        google: Prompt
-      code_font:
-        google: JetBrains Mono
-    orientation: columns
-    vertical_layout: fill
-editor_options: 
-  chunk_output_type: inline
+  #   theme:
+  #     bg: "#FFFAFA"
+  #     fg: "#101010"
+  #     primary: "#a79970"
+  #     base_font:
+  #       google: Prompt
+  #     code_font:
+  #       google: JetBrains Mono
+  #   orientation: columns
+  #   vertical_layout: fill
+  #     editor_options:
+  # chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
