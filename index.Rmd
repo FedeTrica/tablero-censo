@@ -1,0 +1,389 @@
+---
+title: "Tablero Censo 2022"
+output: 
+  flexdashboard::flex_dashboard:
+    logo: logo2.png
+    theme:
+      bg: "#FFFAFA"
+      fg: "#101010" 
+      primary: "#a79970"
+      base_font:
+        google: Prompt
+      code_font:
+        google: JetBrains Mono
+    orientation: columns
+    vertical_layout: fill
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(sf)
+library(DT)
+library(leaflet)
+# Install thematic and un-comment for themed static plots (i.e., ggplot2)
+# thematic::thematic_rmd()
+```
+
+
+```{r}
+
+```
+
+El CNHPyV 2022
+======================================================================
+
+La Direccion General de Estadisticas y Censos, fue la responsable de llevar adelante el Censo Nacional de Población, Hogares y Viviendas 2022 (Censo 2022), fruto de un arduo trabajo colectivo, realizado año a año. Estas tareas previas implican la consulta y pareo de registros administrativos, estimaciones matematicas y por componentes de poblacion,y entre las mas relevantes, la actulizacion cartografica. Puede consultar [La Cartografía](#page-2).  
+
+El Censo 2022 se llevó a cabo por primera vez en la Argentina con una estrategia bimodal: un cuestionario digital y el tradicional barrido territorial con cuestionarios en papel (cédulas censales). El barrido territorial implicó la movilizacion de mas de 16.000 personas en toda la geografia provincial. Sobre el operativo, y mas puede consultar el [El Operativo](#page-3)
+
+Puede consultar los resultados definitivos en las publicaciones temáticas en formato `pdf` y los tabulados sencillos y cuadros en formato `.xlsx` que pone a disposición El Instituto Nacional de Estadística y Censos (INDEC), tanto en el [Geoportal](https://portalgeoestadistico.indec.gob.ar/), como el sitio del [Censo 2022](https://censo.gob.ar/), como en la misma pagina de INDEC en el área [Censos](https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-41-165)
+
+Ante las limitaciones de los tabulados,y el interes de contar con mejores precisiones en las estimaciones y comparaciones temporales de la poblacion, las variaciones entre las rondas censales, asi como analizar y trabajar sobre las condiciones de lograr mayor desagregacion geografica a la vez que mejor informacion en el marco de trabajos colaborativos y de alto estandar, la DGEyC ha conformado el SIGSE, Sistema de Informacion Geografica Corporativo de la Dir. General de Estadisticas y Censos. Consulte mas en el apartado [SIGSE](#page-3)
+
+
+La Cartografía 
+=======================================================================
+
+```{r MAPABASE, include=FALSE}
+Argenmap <- 'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png'
+
+Argenmap_gris <- 'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_gris@EPSG%3A3857@png/{z}/{x}/{-y}.png'
+
+Argenmap_topografico <- 'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_topo@EPSG%3A3857@png/{z}/{x}/{-y}.png'
+
+Argenmap_oscuro <- 'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/argenmap_oscuro@EPSG%3A3857@png/{z}/{x}/{-y}.png'
+
+Argenmap_hibrido <- 'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_hibrido@EPSG%3A3857@png/{z}/{x}/{-y}.png'
+```
+
+Column {data-width=850 .tabset}
+-----------------------------------------------------------------------
+
+```{r data-mapa, include=FALSE}
+pais_86 <- st_read("~/Proyecto_gis_carto_censal_2022/pais86/pais86220.shp")
+
+st_crs(pais_86)
+
+pais_86 <- st_transform(pais_86,crs = 4326)
+  
+```
+
+```{r data-mapa-fracciones, include=FALSE}
+#disolver por fracciones de una manera sencilla con spatialEco
+#Viejo problema de datos devuelve un radio fuera de lugar entre Banda y Figueroa
+global_fracciones_pais86 <- geojsonsf::geojson_sf("~/GitHub/carto_censal_tablero/geodata/fracciones_global_datos.geojson")
+st_crs(global_fracciones_pais86)
+#global_fracciones_pais86 <- st_transform(fracciones_pais86, 4326)
+#plot(global_fracciones_pais86)
+```
+
+```{r data-mapa-vias, include=FALSE}
+
+vias23 <- st_read("~/Proyecto_gis_carto_censal_2022/vias/vias_circulacion_2023.shp")
+st_crs(vias23)
+```
+
+
+```{r mapa, include=FALSE}
+# vectorial_pais86 <- leaflet() |> 
+#   addTiles(group = "OSM") |> 
+#   addTiles(Argenmap, group = "Argenmap") |> 
+#   addPolygons(data = pais_86) |> 
+#   addLayersControl(baseGroups = c("OSM", "Argenmap"))
+# vectorial_pais86
+```
+
+
+```{r data-mapa-precenso}
+# precenso_provincia
+precenso_depto <- geojsonsf::geojson_sf("~/GitHub/carto_censal_tablero/geodata/precenso_viviendas.geojson")
+# precenso_radios
+
+```
+
+```{r data-mapa-rad-urbanos, include=FALSE}
+radios_urbanos_con_datos <- geojsonsf::geojson_sf("~/GitHub/carto_censal_tablero/geodata/radios_urbanos_datos.geojson")
+envolventes_con_datos <- geojsonsf::geojson_sf("~/GitHub/carto_censal_tablero/geodata/envolventes.geojson")
+glimpse(radios_urbanos_con_datos)
+glimpse(envolventes_con_datos)
+```
+
+
+### Pais86
+Conocida en la jerga como *pais86* correponde a la cartografía censal resultante del sistema de segmentacion, y agrupamiento por radios y las fracciones censales. Su construccion no solo se adecua a los estandares nacionales y los consensos interprovinciales y nacionales, sino que requiere tambien un profundo analisis de la geografia provincial, el patron de asentamientos humanos, y los cambios recientes en el uso de la tierra.
+
+```{r mapa-pais86}
+mapa1 <- leaflet() |> 
+  setView(lng = -63,25, lat =-27.67 , zoom = 7) |> 
+  addTiles() |> 
+  addTiles(Argenmap, group = "Argenmap") |> 
+  addTiles(Argenmap_gris, group = "Argenmap Gris") |>
+  addTiles(Argenmap_hibrido, group = "Argenmap Hibrido") |>
+  addTiles(Argenmap_oscuro, group = "Argenmap Oscuro") |>
+  addTiles(Argenmap_topografico, group = "Argenmap Topo") |> 
+  addPolygons(data =  pais_86, group = "Pais86",
+              stroke = .4,
+              color = "black",
+              fillColor = "grey",
+              fillOpacity = .25,
+              popup = pais_86$LINK) |>
+  addLayersControl(overlayGroups = c("Pais86"),
+                   baseGroups = c("Argenmap",
+                                  "Argenmap Gris",
+                                  "Argenmap Hibrido",
+                                  "Argenmap Oscuro",
+                                  "Argenmap Topo",
+                                  "OSM")
+                   )
+mapa1
+```
+
+### Fracciones
+Una desicion interesante es que las fracciones censales son las mismas que en 2010, y al estar disponibles lo Microdatos pronto será posible realizar comparaciones intercensales, con el cuidado del caso, con un desagregacion espacial estrictamente comparable.
+
+```{r mapa-fracciones}
+mapa2 <- leaflet(st_zm(global_fracciones_pais86)) |> 
+  setView(lng = -63,25, lat =-27.67 , zoom = 7) |> 
+  addPolygons(
+    group = "Fracciones",
+    stroke = .3,
+    color = "yellow",
+    fillColor = "lightyellow",
+    fillOpacity = 0.4,
+    popup = paste0("Poblacion est: ", global_fracciones_pais86$pob_tot)
+  ) |> 
+  addTiles() |> 
+  addLayersControl(overlayGroups = c("Fracciones")
+                   )
+mapa2
+```
+
+### Vias de Circulacion
+Uno de los productos cartograficos mas ricos de los trabajo precensales, y necesarios para la segmentacion (ruta del encuestador) es la traza vial que puede realizarse a pie. Conocida como __callejero__ permite avanzar hacia las ciudades digitales y tiene innumerables usos, principalmente el de determinar la ubicacion y distancias relativas entre objetos geograficos. 
+
+```{r mapa-vias}
+mapa3 <- leaflet() |> 
+  setView(lng = -63,25, lat =-27.67 , zoom = 7) |> 
+  addTiles() |> 
+  addPolylines(data = vias23,
+               stroke = .2,
+               color = "black",
+               popup = vias23$NOMENCLA)
+mapa3
+```
+
+### Envolventes Urbanas
+
+La union de los Radios Urbanos permite trazar una envolvente urbana. Luego estimar para este nivel su patron de crecimiento, y diseñar los relevamientos e incluso las politicas de gobierno local basados en este conteo de viviendas y poblacion. 
+
+```{r mapa-radios}
+mapa5 <- leaflet() |>
+  setView(lng = -63,25, lat =-27.67 , zoom = 7) |> 
+  addTiles() |> 
+  addPolygons(data =  envolventes_con_datos,
+              stroke = .1,
+              fillOpacity = .8,
+              popup = paste0("Poblacion estimada: ", envolventes_con_datos$fracc_pob),
+              group = "Envolventes") |> 
+  addPolygons(data = radios_urbanos_con_datos,
+              stroke = .2,
+              color = "lightblue",
+              fillOpacity = 0,
+              popup = paste0("Viviendas encuestadas: ",radios_urbanos_con_datos$R2_viv_enc),
+              group = "Radios urbanos") |> 
+  addLayersControl(overlayGroups = c("Envolventes", "Radios urbanos"))
+mapa5
+```
+
+
+
+### Precenso
+
+El [Precenso de Viviendas 2019-2021](https://precensodeviviendas.indec.gob.ar/) contiene datos de viviendas esperadas disponible por nivel departamento,fraccion y radio. Aunque la cartografia no es del todo coherente con la utilizada en el censo de poblacion, se considera que es una fuente de consulta necesaria.
+
+```{r mapa-precenso}
+mapa4 <- leaflet() |> 
+  setView(lng = -63,25, lat =-27.67 , zoom = 7) |> 
+  addTiles() |> 
+  addPolygons(data = precenso_depto,
+              stroke = .4,
+              color = "blue",
+              fillColor = "lightblue",
+              fillOpacity = .4,
+              popup = paste0("Total de Viviendas esperadas: ", precenso_depto$ind01))
+mapa4
+```
+
+### Localidades
+
+
+Column {data-width=150}
+-----------------------------------------------------------------------
+```{r tabla-de-geometrias, include=FALSE}
+pais_86_datos <- st_drop_geometry(pais_86)
+glimpse(pais_86_datos)
+pais_86_datos <- pais_86_datos |> 
+  mutate(
+    fraccion_concat = paste0(PROV, DEPTO, FRAC),
+    radio_concat = paste0(PROV, DEPTO, FRAC, RADIO)
+  )
+```
+
+```{r cuentas-pais86, include=FALSE}
+
+radios_totales <- n_distinct(pais_86_datos$LINK)
+radios_urbanos <- n_distinct(pais_86_datos$radio_concat[pais_86_datos$TIPO=="U"])
+radios_mixtos <- n_distinct(pais_86_datos$radio_concat[pais_86_datos$TIPO=="M"])
+radios_rurales<- n_distinct(pais_86_datos$radio_concat[pais_86_datos$TIPO=="R"])
+
+#---
+
+unicas_vias23 <- nrow(st_drop_geometry(vias23))
+unicas_vias23
+```
+
+
+### Radios Totales
+```{r}
+valueBox(radios_totales, 
+         caption = "Total de Radios", icon="fa-check-square-o", color = "lightyellow")
+```
+### Radios Urbanos
+```{r}
+valueBox(radios_urbanos, 
+         caption = "Radios Urbanos", icon="fa-check-circle-o", color = "lightgrey")
+```
+### Radios Mixtos
+```{r}
+valueBox(radios_mixtos, 
+         caption = "Radios Mixtos", icon="fa-check-circle-o", color = "#ffe599")
+```
+### Radios Rurales
+```{r}
+valueBox(radios_rurales, 
+         caption = "Radios Rurales", icon="fa-check-circle-o", color = "#f9cb9c")
+```
+### Vias de Circ.
+```{r}
+valueBox(unicas_vias23, 
+         caption = "Calles", icon="fa-th", color = "lightgrey")
+```
+
+
+
+El Operativo
+======================================================================
+
+El Censo 2022 comenzó el 16 de marzo de 2022 en todo el territorio argentino, para un total estimado de 270.000 viviendas. A partir de ese día y hasta el 18 de mayo a las 8:00 hs se realizó el censo digital (que luego se extendió una semana); el 18 de mayo entre las 9 y las 18 hs se llevó a cabo el operativo de campo. Una semana antes había comenzado el operativo en las vastas zonas rurales de la provincia. Mas de 150 sedes censales, montadas en escuelas, comisiones de fomento, clubes, etc. a lo largo de 200 localidades, puestos y parajes.  
+Luego del 18 de mayo al 24 se extendieron las tareas de *recupero* censal, con minuciosa observacion del desempeño del operativo.
+
+Column {data-width=250}
+-----------------------------------------------------------------------
+```{r tabla-estructura-censal, include=FALSE}
+est_censal <- readxl::read_xlsx(path = "~/GitHub/carto_censal_tablero/estructura censal.xlsx")
+glimpse(est_censal)
+
+```
+```{r lista-est, include=FALSE}
+estructura_censal <- as.data.frame(table(est_censal$`Nombre Rol`))
+
+estructura_censal
+```
+
+### Tabla Estructura Censal
+
+```{r}
+datatable(estructura_censal,
+          caption = "Estructura censal - Operativo")
+```
+
+Column {data-width=750} {.tabset}
+-----------------------------------------------------------------------
+### Listado de Localidades censales
+
+```{r tabla-localidades, include=FALSE}
+
+localidades_indec_2024 <- read.csv2("~/GitHub/carto_censal_tablero/data/listado_localidades.csv",
+                                    fileEncoding = "UTF8"
+                                    )
+localidades_indec_2024
+```
+```{r}
+datatable(localidades_indec_2024,
+          rownames = FALSE,
+          filter = list(position = 'top', clear = FALSE),
+  options = list(search = list(regex = TRUE, caseInsensitive = TRUE, search = 'M[ae]'),
+        pageLength = 5),
+  caption = "Localidades Censo 2022, Listado actualizado a feb 2024",
+)
+```
+
+
+```{r data-table-error, include=FALSE}
+# datatable(tabla_bahra,
+#           extensions = 'Buttons', options = list(
+#     dom = 'Bfrtip',
+#     buttons = c('print'),
+#     list(search = list(regex = TRUE, caseInsensitive = TRUE, search = 'M[ae]'),
+#         pageLength = 5)
+#   ))
+
+  # list(
+  #   dom = 'Bfrtip',
+  #   buttons = c('print')
+  # ),
+# options = list(
+#     dom = 'Bfrtip',
+#     buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+```
+### BAHRA
+
+```{r bahra, include=FALSE}
+bahra_sde <- st_read("~/bahra_puntos/bahra.shp")
+```
+```{r bahra-tabla, include=FALSE}
+cols_bahra <- c(5:8, 13:14, 17)
+tabla_bahra <- st_drop_geometry(bahra_sde) |> 
+  select(cols_bahra)
+#select(allof(cols))
+```
+```{r data-table-bahra}
+datatable(tabla_bahra,
+          #caption = "Base de Asentamientos Humanos Republica Argentina - Santiago del Estero y aledañas",
+          extensions = 'Buttons',
+          rownames = FALSE,
+         # filter = list(position = 'top', clear = FALSE),
+          options = list(dom = 'Bfrtip', buttons = c('print'))
+)
+```
+
+
+### Reglas y Codigos
+
+Con Gobierno local
+Sin Gobierno local
+Cabecera de departamento
+
+Los codigos, 2 provincia, 3 departamento, 3 localidades
+un codigo de 5 caracteres, a uno de 7 si consideramos el radio a uno de 8 si apuntamos a la localidad, puesto o paraje. Esta es la maxima desagregacion posible a una entidad univoca.
+
+La Base de Asentamientos Humanos de la República Argentina (BAHRA) es la primera base de datos oficial y normalizada de localidades, parajes, entidades y bases antárticas del territorio nacional; donde se identifica unívocamente a todos los asentamientos humanos, registrando el nombre, coordenadas y código único, entre otros atributos. Consulte en [BAHRA](http://www.bahra.gob.ar/index.html)
+
+El SIGSE
+======================================================================
+
+
+### Chart E
+
+```{r}
+
+```
+
+### Chart F
+
+```{r}
+
+```
