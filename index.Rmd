@@ -28,21 +28,116 @@ library(leaflet)
 ```
 
 
-```{r}
+```{r carga-de-imagenes, include=FALSE}
+ 
+# ![Caption for the image](path/to/image.png) 
 
 ```
 
 El CNHPyV 2022
 ======================================================================
 
-La Direccion General de Estadisticas y Censos, fue la responsable de llevar adelante el Censo Nacional de Población, Hogares y Viviendas 2022 (Censo 2022), fruto de un arduo trabajo colectivo, realizado año a año. Estas tareas previas implican la consulta y pareo de registros administrativos, estimaciones matematicas y por componentes de poblacion,y entre las mas relevantes, la actulizacion cartografica. Puede consultar [La Cartografía](#page-2).  
+```{r}
+#Imput data, tabla poblacion por depto
+# viviendas
+#hogares
+```
 
-El Censo 2022 se llevó a cabo por primera vez en la Argentina con una estrategia bimodal: un cuestionario digital y el tradicional barrido territorial con cuestionarios en papel (cédulas censales). El barrido territorial implicó la movilizacion de mas de 16.000 personas en toda la geografia provincial. Sobre el operativo, y mas puede consultar el [El Operativo](#page-3)
 
-Puede consultar los resultados definitivos en las publicaciones temáticas en formato `pdf` y los tabulados sencillos y cuadros en formato `.xlsx` que pone a disposición El Instituto Nacional de Estadística y Censos (INDEC), tanto en el [Geoportal](https://portalgeoestadistico.indec.gob.ar/), como el sitio del [Censo 2022](https://censo.gob.ar/), como en la misma pagina de INDEC en el área [Censos](https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-41-165)
+Column {data-width=850 .tabset}
+---------------------------------------------------------------------
 
-Ante las limitaciones de los tabulados,y el interes de contar con mejores precisiones en las estimaciones y comparaciones temporales de la poblacion, las variaciones entre las rondas censales, asi como analizar y trabajar sobre las condiciones de lograr mayor desagregacion geografica a la vez que mejor informacion en el marco de trabajos colaborativos y de alto estandar, la DGEyC ha conformado el SIGSE, Sistema de Informacion Geografica Corporativo de la Dir. General de Estadisticas y Censos. Consulte mas en el apartado [SIGSE](#page-3)
+### El Censo
 
+El Censo Nacional de Población, Hogares y Viviendas de la Argentina se realizó en dos instancias. En la primera, se habilitó un cuestionario digital que estuvo disponible para completar entre el 16 de marzo y el 18 de mayo. En una segunda instancia, se implementó la modalidad presencial a través del barrido territorial, que se llevó a cabo el miércoles 18 de mayo, el Día del Censo, declarado feriado nacional.
+
+![Censo 2022](encabezado_indec.png){#id .class width=70% height=70%}
+
+La Direccion General de Estadisticas y Censos, fue la responsable de llevar adelante el Censo Nacional de Población, Hogares y Viviendas 2022 (Censo 2022) en Santiago del Estero, fruto de un arduo trabajo colectivo, realizado año a año. Estas tareas previas implicaron entre otras, la consulta y pareo de registros administrativos, estimaciones de población,y entre las mas relevantes, la actulizacion cartografica. Puede consultar en el apartado [La Cartografía](#la-cartografía).  
+
+El Censo 2022 se llevó a cabo por primera vez en la Argentina con una estrategia bimodal: un cuestionario digital y el tradicional barrido territorial con cuestionarios en papel (cédulas censales). El barrido territorial implicó la movilizacion de mas de 16.000 personas en toda la geografia provincial. Sobre el operativo, y mas puede consultar el [El Operativo](#el-operativo).
+
+Puede consultar los resultados definitivos en las publicaciones temáticas en formato `pdf` y los tabulados sencillos y cuadros en formato `.xlsx` que pone a disposición El Instituto Nacional de Estadística y Censos (INDEC), tanto en el [Geoportal](https://portalgeoestadistico.indec.gob.ar/), como en el sitio del [Censo 2022](https://censo.gob.ar/), como en la misma pagina de INDEC en el área [Censos](https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-41-165)
+
+Ante las limitaciones de los tabulados,y el interes de contar con mejores precisiones en las estimaciones y comparaciones temporales de la poblacion, las variaciones entre las rondas censales, asi como analizar y trabajar sobre las condiciones de posibilidad de lograr mayor desagregacion geografica en las estadisticas publicas, a la vez uqe contar con mejor informacion en marco de interoperabilidad y de altos estandar de calidad, la DGEyC ha conformado el SIGSE, Sistema de Informacion Geografica Corporativo de la Dir. General de Estadisticas y Censos. Consulte mas en el apartado [SIGSE](#el-sigse)
+
+
+### Santiago del Estero en 2022
+
+```{r tabla-resultados, include=FALSE}
+pob_depto <- read.csv2("~/GitHub/carto_censal_tablero/data/pob_total_depto_80_30.csv")
+```
+
+Descargue la Tabla en formato Excel
+
+```{r}
+datatable(pob_depto,
+          caption = "Poblacion Total en viviendas particulares Censos 1980 - 2022, y estimacion a 2030",
+          rownames = FALSE,
+          extensions = "Buttons", 
+options = list(dom = 'Bfrtip', buttons = c('excel')))
+```
+
+### La Poblacion
+
+Grafico de evolucion de la poblacion
+
+```{r data-wrangling, include=FALSE}
+pob_tot_censos <- pob_depto |> 
+  pivot_longer(
+    cols = starts_with("censo"),
+    names_to = "Censo",
+    names_prefix = "censo.",
+    values_to = "Pob",
+    values_drop_na = TRUE
+  )
+pob_tot_censos
+```
+
+```{r grafico1}
+grafico1 <- pob_tot_censos |> 
+  group_by(Censo) |> 
+  summarise(pob = sum(Pob)) |> 
+  ggplot(aes(x = Censo, y= pob )) +
+  geom_bar(stat = "identity")+
+  theme_minimal()+
+  labs(
+    title = "Poblacion Total en Viviendas Residenciales"
+  )
+
+grafico1
+```
+
+Column {data-width=150}
+----------------------------------------------------------------------
+```{r indicadores-key, include=FALSE}
+pob_total <- sum(pob_tot_censos$Pob[pob_tot_censos$Censo == 2022])
+pob_total
+```
+
+### Poblacion Total
+```{r}
+valueBox(1060906,caption = "Personas", icon = "fa-users", color = "grey" )
+```
+
+### Varones
+```{r}
+valueBox(521543,caption = "Varones", icon = "fa-male", color = "lightblue" )
+```
+
+### Mujeres
+```{r}
+valueBox(539363,caption = "Mujeres", icon = "fa-female", color = "lightpink" )
+```
+
+### Viviendas
+```{r}
+valueBox(1057752,caption = "Pers.Viv.Part", icon = "fa-home", color = "lightgrey" )
+```
+### Viv Colectivas
+```{r}
+valueBox(3099,caption = "Pers. Viv.Col", icon = "fa-building-o", color = "lightgrey" )
+```
 
 La Cartografía 
 =======================================================================
@@ -277,7 +372,7 @@ valueBox(unicas_vias23,
 El Operativo
 ======================================================================
 
-El Censo 2022 comenzó el 16 de marzo de 2022 en todo el territorio argentino, para un total estimado de 270.000 viviendas. A partir de ese día y hasta el 18 de mayo a las 8:00 hs se realizó el censo digital (que luego se extendió una semana); el 18 de mayo entre las 9 y las 18 hs se llevó a cabo el operativo de campo. Una semana antes había comenzado el operativo en las vastas zonas rurales de la provincia. Mas de 150 sedes censales, montadas en escuelas, comisiones de fomento, clubes, etc. a lo largo de 200 localidades, puestos y parajes.  
+El Censo 2022 comenzó el 16 de marzo de 2022 en todo el territorio argentino, para un total estimado de 17 millones de viviendas (en nuestra provincia al menos unas 270.000 viviendas). A partir de ese día y hasta el 18 de mayo a las 8:00 hs se realizó el censo digital (que luego se extendió una semana); el 18 de mayo entre las 9 y las 18 hs se llevó a cabo el operativo de campo. Una semana antes había comenzado el operativo en las vastas zonas rurales de la provincia. Mas de 150 sedes censales, montadas en escuelas, comisiones de fomento, clubes, etc. a lo largo de 200 localidades, puestos y parajes.  
 Luego del 18 de mayo al 24 se extendieron las tareas de *recupero* censal, con minuciosa observacion del desempeño del operativo.
 
 Column {data-width=250}
@@ -304,6 +399,7 @@ Column {data-width=750} {.tabset}
 -----------------------------------------------------------------------
 ### Listado de Localidades censales
 
+Consulte por medio de filtros para cada columna el listado de localidades censales 2022.
 ```{r tabla-localidades, include=FALSE}
 
 localidades_indec_2024 <- read.csv2("~/GitHub/carto_censal_tablero/data/listado_localidades.csv",
@@ -341,6 +437,7 @@ datatable(localidades_indec_2024,
 ```
 ### BAHRA
 
+Busque por departamento o localidad o codigo, y exporte un excel con los datos suficientes para orientar el registro.
 ```{r bahra, include=FALSE}
 bahra_sde <- st_read("~/bahra_puntos/bahra.shp")
 ```
@@ -356,34 +453,140 @@ datatable(tabla_bahra,
           extensions = 'Buttons',
           rownames = FALSE,
          # filter = list(position = 'top', clear = FALSE),
-          options = list(dom = 'Bfrtip', buttons = c('print'))
+          options = list(dom = 'Bfrtip', buttons = c('excel'))
 )
 ```
 
 
 ### Reglas y Codigos
 
-Con Gobierno local
-Sin Gobierno local
-Cabecera de departamento
+En el Listado de INDEC puede diferenciar las localidades segun cuenten Con Gobierno local o sean Sin Gobierno local y Cabecera de departamento.
 
-Los codigos, 2 provincia, 3 departamento, 3 localidades
-un codigo de 5 caracteres, a uno de 7 si consideramos el radio a uno de 8 si apuntamos a la localidad, puesto o paraje. Esta es la maxima desagregacion posible a una entidad univoca.
+El sistema de codigos ademas indica, en 2 posiciones la provincia,en 3 el departamento, y en 3 las localidades.  
+
+Así un codigo de 5 posiciones indica un departamento (uno de 7 podria indicar el radio censal), y uno de 8 posiciones a la localidad, puesto o paraje. Esta es la maxima desagregacion posible a una entidad univoca.Conforme al sistema de codigos geograficos o Unidades Geoestadisticas, para mas consulte [INDEC](https://geoservicios.indec.gob.ar/codgeo/index.php?pagina=inicio) 
 
 La Base de Asentamientos Humanos de la República Argentina (BAHRA) es la primera base de datos oficial y normalizada de localidades, parajes, entidades y bases antárticas del territorio nacional; donde se identifica unívocamente a todos los asentamientos humanos, registrando el nombre, coordenadas y código único, entre otros atributos. Consulte en [BAHRA](http://www.bahra.gob.ar/index.html)
 
 El SIGSE
 ======================================================================
 
+Column {.tabset}
+---------------------------------------------------------------------
 
-### Chart E
+### SIG Corporativo 
 
-```{r}
+Montar un SIG Corporativo en el ámbito de la DGEyC en base a la producción, normalización y actualización de información Geoespacial propia y de socios terceros estratégicos, en el marco de consensos técnicos, organizacionales y normativos (fundamentos IDE) orientado a la coordinación y eficiencia de la gestión pública y la toma de decisiones a nivel provincial y de gobiernos locales.
 
-```
+**Diagnóstico y problemas a abordar**
 
-### Chart F
+- Reducir la redundancia de información – evitar la duplicación, superposición y contradicciones en la información pública oficial.
 
-```{r}
+- Mejorar la calidad de cartografía básica asociada a límites jurídico-políticos-administrativos que deben ordenarse; como la armonización entre fuentes de datos oficiales nacionales y provinciales, entre organismos nacionales, y entre ellos y los provinciales, y hacia el interior de estos. Áreas claves como los catastros rurales, los ejidos municipales, el ordenamiento territorial, que requieren de la cooperación de actores e interoperabilidad de información.
 
-```
+- Mejorar y difundir de manera centralizada la localización y nombramiento de entidades espaciales como regiones, ciudades, localidad, parajes y puestos. Tipo de gobierno y autoridades, y acceso a información al usuario. Gobiernos locales, y asentamientos humanos.
+
+- Promover cartografías colaborativas en la sociedad en ejes como la historia local, medioambiente, cultura y turismo e innovar en el ámbito educativo, incursionando en el pensamiento espacial de la comunidad educativa
+
+- Actualizar y mantener la información relativa a Infraestructura de servicios y necesaria para la gestión del riesgo, preservando la coherencia con las diversas fuentes productoras y bajo altos estándares de información geoespacial.
+
+- Generar acuerdos en áreas claves de gobierno, con productos estables de mediano y largo plazo. En Salud al igual que en Educación, es preciso georreferenciar establecimientos y servicios
+
+### Productos a desarrollar
+
+-> Trabaja con nosotros
+enviar un mail a dgeyccomunicacionydifusion@gmail.com 
+
+
+**Trabajo con Gobiernos Locales**
+
+- Municipalidad de Monte Quemado
+- Municipalidad de Sumampa
+- Comisión de Villa Robles
+- Comisiones Municipales de Departamento Banda
+
+Capas sobre censos 
+
+-	Callejeros
+-	Localidades censales con datos (2010 -2022)
+-	Radios (Urbanos, envolventes)
+-	Fracciones
+-	Departamento
+-	Pre-censo vivienda
+
+Capas censos históricos:
+
+-	Cartografía censal 2001-2022  
+-	Radios con vivienda y población 2001 y 2010  
+-	Departamento con población 1980, 1991, 2001, 2010  
+-	Cartografía histórica
+
+
+Capas de indicadores económicos:
+
+-	Estimaciones agrícolas
+-	SIPA + Producción
+-	Establecimientos económicos
+
+
+Capas Agro-forestal
+
+-	Desmontes Redd+ 
+-	MAPBioMas
+-	Ordenamientos Territorial 2009 y 2015
+
+Capas propias DPE Operativos:
+
+-	Cartografía censal (pais86) de 2010 y de 2022
+-	Localidades con Nomenclador
+-	Localidades de Encuestas
+-	Envolventes de localidades + callejero
+-	Establecimientos
+- Muestreos
+
+Capas de socios DPE
+
+-	Seguridad
+-	Salud 
+- Eduación
+-	Obras Sanitarias
+-	Obras publicas
+- Catastro
+
+### Ley de Estadistica
+
+Amparados Ley 6745 de 6 julio de 2005. [Disponible aquí](https://drive.google.com/file/d/17GARtpDxzqrmU3eJ0Eti71QNvpLs6iEN/view?usp=sharing)
+
+La DGEyC es el organismo rector del Sistema Estadistico, Demografico, Economico y Social de la Provincia (SEDES)
+
+Esta responsabilidad y facultades potencian el rol de la DGEyC
+
+La Dirección Provincial de Estadísticas y Censos cuenta con
+
+✓ Recursos Humanos
+
+✓ Información abundante y de calidad
+
+✓ Garantía de Secreto estadístico
+
+✓ Estándares de Alto Nivel
+
+✓ Estabilidad de mediano y largo plazo  
+
+
+De esta manera SIGSE permitirá
+• Relevar, capturar, almacenar y normalizar información georreferenciada  
+
+• Así como brindar asistencia técnica y capacitación  
+
+• Incrementar el volumen y calidad de información pública georreferenciada  
+
+• Facilitar la interoperabilidad bajo estándares de alta calidad  
+
+• Ajustar a derechos y obligaciones el uso de la información, garantizando el secreto estadístico  
+
+• Brindar soporte a la planificación y toma de decisiones  
+
+• Dotar de estabilidad proyectos de largo plazo y largo alcance territorial  
+
+
