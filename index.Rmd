@@ -57,7 +57,7 @@ La Direccion General de Estadisticas y Censos, fue la responsable de llevar adel
 
 El Censo 2022 se llevó a cabo por primera vez en la Argentina con una estrategia bimodal: un cuestionario digital y el tradicional barrido territorial con cuestionarios en papel (cédulas censales). El barrido territorial implicó la movilizacion de mas de 16.000 personas en toda la geografia provincial. Sobre el operativo, y mas puede consultar el [El Operativo](#el-operativo).
 
-Puede consultar los resultados definitivos en las publicaciones temáticas en formato `pdf` y los tabulados sencillos y cuadros en formato `.xlsx` que pone a disposición El Instituto Nacional de Estadística y Censos (INDEC), tanto en el [Geoportal](https://portalgeoestadistico.indec.gob.ar/), como en el sitio del [Censo 2022](https://censo.gob.ar/), como en la misma pagina de INDEC en el área [Censos](https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-41-165)
+Puede consultar los resultados definitivos en las publicaciones temáticas en formato `pdf` y los tabulados sencillos y cuadros en formato `.xlsx` que pone a disposición el Instituto Nacional de Estadística y Censos (INDEC), tanto en el [Geoportal](https://portalgeoestadistico.indec.gob.ar/), como en el sitio del [Censo 2022](https://censo.gob.ar/), como en la misma pagina de INDEC en el área [Censos](https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-41-165)
 
 Ante las limitaciones de los tabulados,y el interes de contar con mejores precisiones en las estimaciones y comparaciones temporales de la poblacion, las variaciones entre las rondas censales, asi como analizar y trabajar sobre las condiciones de posibilidad de lograr mayor desagregacion geografica en las estadisticas publicas, a la vez uqe contar con mejor informacion en marco de interoperabilidad y de altos estandar de calidad, la DGEyC ha conformado el SIGSE, Sistema de Informacion Geografica Corporativo de la Dir. General de Estadisticas y Censos. Consulte mas en el apartado [SIGSE](#el-sigse)
 
@@ -587,6 +587,37 @@ De esta manera SIGSE permitirá
 
 • Brindar soporte a la planificación y toma de decisiones  
 
-• Dotar de estabilidad proyectos de largo plazo y largo alcance territorial  
+• Dotar de estabilidad proyectos de largo plazo y largo alcance territorial 
+
+### Visor GeoNube
+
+SIGSE de la [DGEyC](http://www.estadisticasde.gob.ar/institucional.html) y la [Coop. Cambalache](https://cambalache.coop.ar/) mantienen en desarrollo un proyecto de Visor Webmap. La DGEyC busca a trabes de esta interfaz que los socios e interesados en el proiyecto SIGSE puedan acceder a capas de informacion geografica publicas o con acceso restringido, interoperar, y desarrollar nuevos productos.
+
+**-- Acceda al visor en desarrollo** [GeoNube - DGEyC](https://geonube.com.ar/visor/ide_sde) **--**
+
+![geonube](geonube.png) {#id .class width=70% height=70%}
+### Ordenamiento Territorial
+
+```{r import-data-sigse, include=FALSE}
+#pozos
+
+#goblocal
+
+#envolventes
+
+#isocronas
+
+#red vial terciaria
+
+
+```
+
+La cuestion de los ejidos.
+
+La ley y los 5 Km de radio de la sede.
+
+Los pozos.
+
+Las escuelas.
 
 
