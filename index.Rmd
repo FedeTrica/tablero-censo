@@ -3,15 +3,15 @@ title: "Tablero Censo 2022"
 output: 
   flexdashboard::flex_dashboard:
     logo: logo2.png
-  #   theme:
-  #     bg: "#FFFAFA"
-  #     fg: "#101010"
-  #     primary: "#a79970"
-  #     base_font:
-  #       google: Prompt
-  #     code_font:
-  #       google: JetBrains Mono
-  #   orientation: columns
+    theme:
+      bg: "#FFFAFA"
+      fg: "#101010"
+      primary: "#a79970"
+      base_font:
+        google: Roboto
+      code_font:
+        google: JetBrains Mono
+    orientation: columns
   #   vertical_layout: fill
   #     editor_options:
   # chunk_output_type: inline
@@ -24,15 +24,9 @@ library(sf)
 library(DT)
 library(leaflet)
 # Install thematic and un-comment for themed static plots (i.e., ggplot2)
-# thematic::thematic_rmd()
+#thematic::thematic_rmd()
 ```
 
-
-```{r carga-de-imagenes, include=FALSE}
- 
-# ![Caption for the image](path/to/image.png) 
-
-```
 
 El CNHPyV 2022
 ======================================================================
@@ -59,7 +53,7 @@ El Censo 2022 se llevó a cabo por primera vez en la Argentina con una estrategi
 
 Puede consultar los resultados definitivos en las publicaciones temáticas en formato `pdf` y los tabulados sencillos y cuadros en formato `.xlsx` que pone a disposición el Instituto Nacional de Estadística y Censos (INDEC), tanto en el [Geoportal](https://portalgeoestadistico.indec.gob.ar/), como en el sitio del [Censo 2022](https://censo.gob.ar/), como en la misma pagina de INDEC en el área [Censos](https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-41-165)
 
-Ante las limitaciones de los tabulados,y el interes de contar con mejores precisiones en las estimaciones y comparaciones temporales de la poblacion, las variaciones entre las rondas censales, asi como analizar y trabajar sobre las condiciones de posibilidad de lograr mayor desagregacion geografica en las estadisticas publicas, a la vez uqe contar con mejor informacion en marco de interoperabilidad y de altos estandar de calidad, la DGEyC ha conformado el SIGSE, Sistema de Informacion Geografica Corporativo de la Dir. General de Estadisticas y Censos. Consulte mas en el apartado [SIGSE](#el-sigse)
+Ante las limitaciones de los tabulados,y el interes de contar con mejores precisiones en las estimaciones y comparaciones temporales de la poblacion, las variaciones entre las rondas censales, asi como analizar y trabajar sobre las condiciones de posibilidad de lograr mayor desagregacion geografica en las estadisticas publicas, a la vez que contar con mejor informacion en marco de interoperabilidad y de altos estandar de calidad, la DGEyC ha conformado el SIGSE, Sistema de Informacion Geografica Corporativo de la Dir. General de Estadisticas y Censos. Consulte mas en el apartado [SIGSE](#el-sigse)
 
 
 ### Santiago del Estero en 2022
@@ -80,7 +74,7 @@ options = list(dom = 'Bfrtip', buttons = c('excel')))
 
 ### La Poblacion
 
-Grafico de evolucion de la poblacion
+Gráfico de evolución de la población
 
 ```{r data-wrangling, include=FALSE}
 pob_tot_censos <- pob_depto |> 
@@ -94,18 +88,42 @@ pob_tot_censos <- pob_depto |>
 pob_tot_censos
 ```
 
-```{r grafico1}
-grafico1 <- pob_tot_censos |> 
-  group_by(Censo) |> 
-  summarise(pob = sum(Pob)) |> 
-  ggplot(aes(x = Censo, y= pob )) +
-  geom_bar(stat = "identity")+
-  theme_minimal()+
-  labs(
-    title = "Poblacion Total en Viviendas Residenciales"
-  )
+```{r grafico1, include=FALSE}
+# grafico1 <- pob_tot_censos |> 
+#   group_by(Censo) |> 
+#   summarise(pob = sum(Pob)) |> 
+#   ggplot(aes(x = Censo, y= pob )) +
+#   geom_bar(stat = "identity")+
+#   theme_light()+
+#   labs(
+#     title = "Poblacion Total en Viviendas Residenciales"
+#   )
+# 
+# grafico1
 
-grafico1
+```
+
+```{r tabla-plot, include=FALSE}
+plot_dinamico <-  pob_tot_censos |> 
+  select(Pob, Censo) |> 
+  group_by(Censo) |> 
+  summarise(Poblacion_Total= sum(Pob))
+plot_dinamico
+```
+
+
+```{r grafico-dinamico1, include=FALSE}
+grafico1b <-  plotly::plot_ly(plot_dinamico, x= ~Censo, y= ~Poblacion_Total, name = "Nombre", type = "bar")
+```
+
+
+```{r grafico-dinamico2}
+# grafico1b <- grafico1b |> 
+#   layout(title = "Poblacion Total Santiago del Estero",
+#          xaxis = list("Rondas Censales"),
+#          yaxis = list("Población Total"))
+
+grafico1b
 ```
 
 Column {data-width=150}
@@ -262,11 +280,22 @@ Uno de los productos cartograficos mas ricos de los trabajo precensales, y neces
 ```{r mapa-vias}
 mapa3 <- leaflet() |> 
   setView(lng = -63,25, lat =-27.67 , zoom = 7) |> 
-  addTiles() |> 
+  addTiles(group = "OSM") |> 
+  addTiles(Argenmap_oscuro, group = "Argenmap Oscuro") |>
+  addTiles(Argenmap, group = "Argenmap") |> 
+  addTiles(Argenmap_gris, group = "Argenmap Gris") |>
+  addTiles(Argenmap_hibrido, group = "Argenmap Hibrido") |>
   addPolylines(data = vias23,
                stroke = .2,
-               color = "black",
-               popup = vias23$NOMENCLA)
+               color = "white",
+               popup = vias23$NOMENCLA) |> 
+  addLayersControl(overlayGroups = c("Pais86"),
+                   baseGroups = c("Argenmap",
+                                  "Argenmap Gris",
+                                  "Argenmap Hibrido",
+                                  "Argenmap Oscuro",
+                                  "OSM"))
+
 mapa3
 ```
 
@@ -314,6 +343,7 @@ mapa4
 
 ### Localidades
 
+En desarrollo
 
 Column {data-width=150}
 -----------------------------------------------------------------------
@@ -464,7 +494,9 @@ En el Listado de INDEC puede diferenciar las localidades segun cuenten Con Gobie
 
 El sistema de codigos ademas indica, en 2 posiciones la provincia,en 3 el departamento, y en 3 las localidades.  
 
-Así un codigo de 5 posiciones indica un departamento (uno de 7 podria indicar el radio censal), y uno de 8 posiciones a la localidad, puesto o paraje. Esta es la maxima desagregacion posible a una entidad univoca.Conforme al sistema de codigos geograficos o Unidades Geoestadisticas, para mas consulte [INDEC](https://geoservicios.indec.gob.ar/codgeo/index.php?pagina=inicio) 
+> Ej_ **86** Santiago del Estero **007** Aguirre y **030** Malbrán => 85007030
+
+Así, un codigo de 5 posiciones indica un Departamento (y uno de 7 podra indicar ´la fraccion, y un de 9 un radio censal), y uno de 8 posiciones a la localidad, puesto o paraje. Esta es la maxima desagregacion posible a una entidad unica e inequivoca.Conforme al sistema de codigos geograficos o Unidades Geoestadisticas, para mas consulte [INDEC](https://geoservicios.indec.gob.ar/codgeo/index.php?pagina=inicio) 
 
 La Base de Asentamientos Humanos de la República Argentina (BAHRA) es la primera base de datos oficial y normalizada de localidades, parajes, entidades y bases antárticas del territorio nacional; donde se identifica unívocamente a todos los asentamientos humanos, registrando el nombre, coordenadas y código único, entre otros atributos. Consulte en [BAHRA](http://www.bahra.gob.ar/index.html)
 
@@ -509,10 +541,10 @@ Capas sobre censos
 
 -	Callejeros
 -	Localidades censales con datos (2010 -2022)
--	Radios (Urbanos, envolventes)
--	Fracciones
--	Departamento
--	Pre-censo vivienda
+-	Radios (Urbanos, Envolventes urbanas)
+-	Poblacion y estimaciones por Fracciones
+-	por Departamentos
+-	Pre-censo viviendas
 
 Capas censos históricos:
 
@@ -533,11 +565,13 @@ Capas Agro-forestal
 
 -	Desmontes Redd+ 
 -	MAPBioMas
--	Ordenamientos Territorial 2009 y 2015
+-	Ordenamiento Territorial 2009 y 2015
+- Stock pecuario
+- Estimaciones agricolas
 
 Capas propias DPE Operativos:
 
--	Cartografía censal (pais86) de 2010 y de 2022
+-	Cartografía censal (pais86) de 2001, 2010 y de 2022
 -	Localidades con Nomenclador
 -	Localidades de Encuestas
 -	Envolventes de localidades + callejero
@@ -546,6 +580,7 @@ Capas propias DPE Operativos:
 
 Capas de socios DPE
 
+- Justicia y DDHH
 -	Seguridad
 -	Salud 
 - Eduación
@@ -553,28 +588,42 @@ Capas de socios DPE
 -	Obras publicas
 - Catastro
 
-### Ley de Estadistica
+### Ley de Estadistica SEDES
 
-Amparados Ley 6745 de 6 julio de 2005. [Disponible aquí](https://drive.google.com/file/d/17GARtpDxzqrmU3eJ0Eti71QNvpLs6iEN/view?usp=sharing)
+El trabajo y los proyectos de la DGEyC se encuentran amparados por la Ley 6745 de 6 julio de 2005. [LEY DE ESTADISTICAS Y CENSOS](https://drive.google.com/file/d/17GARtpDxzqrmU3eJ0Eti71QNvpLs6iEN/view?usp=sharing)
 
-La DGEyC es el organismo rector del Sistema Estadistico, Demografico, Economico y Social de la Provincia (SEDES)
 
-Esta responsabilidad y facultades potencian el rol de la DGEyC
+![ley](esquema_ley.png)
+
+
+
+La **DGEyC es el organismo rector del Sistema Estadistico, Demografico, Economico y Social de la Provincia (SEDES)** responsabilidad y facultades potencian el rol de la DGEyC
+
+> **ART. 3º.** - Créase el Sistema Estadístico Demográfico, Económico y Social de la Provincia **(SEDES)**, el que estará integrado por la información producida por los siguientes organismos o dependencias:
+    
+  a) La Dirección General de Estadísticas y Censos, será el  organismo rector del sistema, que ejercerá la coordinación del SEDES
+  b) Los servicios estadísticos de los Organismos Centralizados y Descentralizados de la Administración Pública Provincial
+  c) Los servicios estadísticos de Municipios que adhieran a la presente Ley.
+  d) Los servicios estadísticos de organismos nacionales con asiento en la Provincia, en tanto medie común acuerdo con los mismos.
+  e) Los servicios estadísticos de los Entes Reguladores con asiento en la Provincia, en tanto medie común acuerdo con los mismos.
+  f) Los servicios Estadísticos de todo otro organismo que a juicio de la Dirección General de Estadísticas y Censos, o del Organismo que establezca el Poder Ejecutivo, deba incorporarse al Sistema.
+
 
 La Dirección Provincial de Estadísticas y Censos cuenta con
 
-✓ Recursos Humanos
+**✓ **Recursos Humanos calificados
 
-✓ Información abundante y de calidad
+**✓ **Información abundante y de calidad
 
-✓ Garantía de Secreto estadístico
+**✓ **Garantía de Secreto estadístico
 
-✓ Estándares de Alto Nivel
+**✓ **Estándares de Alto Nivel
 
-✓ Estabilidad de mediano y largo plazo  
+**✓ **Estabilidad de mediano y largo plazo  
 
 
-De esta manera SIGSE permitirá
+**De esta manera SIGSE permitirá:**
+
 • Relevar, capturar, almacenar y normalizar información georreferenciada  
 
 • Así como brindar asistencia técnica y capacitación  
@@ -593,9 +642,14 @@ De esta manera SIGSE permitirá
 
 SIGSE de la [DGEyC](http://www.estadisticasde.gob.ar/institucional.html) y la [Coop. Cambalache](https://cambalache.coop.ar/) mantienen en desarrollo un proyecto de Visor Webmap. La DGEyC busca a trabes de esta interfaz que los socios e interesados en el proiyecto SIGSE puedan acceder a capas de informacion geografica publicas o con acceso restringido, interoperar, y desarrollar nuevos productos.
 
-**-- Acceda al visor en desarrollo** [GeoNube - DGEyC](https://geonube.com.ar/visor/ide_sde) **--**
 
-![geonube](geonube.png) {#id .class width=70% height=70%}
+**-- Acceda al visor en desarrollo** [GeoNube - DGEyC](https://geonube.com.ar/visor/ide_sde) **--**  
+
+
+
+![geonube](geonube.png){#id .class width=70% height=70%} 
+
+
 ### Ordenamiento Territorial
 
 ```{r import-data-sigse, include=FALSE}
@@ -605,19 +659,13 @@ SIGSE de la [DGEyC](http://www.estadisticasde.gob.ar/institucional.html) y la [C
 
 #envolventes
 
-#isocronas
-
-#red vial terciaria
-
-
 ```
+En desarrollo
 
-La cuestion de los ejidos.
+### Estimaciones de Población
 
-La ley y los 5 Km de radio de la sede.
+En desarrollo
 
-Los pozos.
-
-Las escuelas.
+Modelamiento estadistico mediante uso de Variables sintomaticas (padrones electorales, matricula escolar, registros de usuarios de servicios), y de informacion basada en Geoprocesos y Teledetección.
 
 
